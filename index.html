@@ -1,0 +1,579 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Create Student ID | AcademeForge</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f8fafc, #eef6ff);
+      color: #0f172a;
+      padding: 18px;
+    }
+
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      background: white;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      font-size: 24px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.94);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 28px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+    }
+
+    h2 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+    .muted {
+      margin: 0 0 22px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      font-weight: 700;
+      font-size: 14px;
+      color: #334155;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 15px;
+      border-radius: 16px;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+
+    .courses {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 14px 0 18px;
+    }
+
+    .course-option {
+      border: 1px solid #dbe3ee;
+      border-radius: 20px;
+      padding: 15px;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .course-option input {
+      width: auto;
+      margin-top: 4px;
+    }
+
+    .course-option strong {
+      display: block;
+      font-size: 16px;
+    }
+
+    .course-option span {
+      display: block;
+      color: #16a34a;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .total-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 16px;
+      border-radius: 20px;
+      margin: 16px 0;
+    }
+
+    .total-box strong {
+      font-size: 24px;
+      color: #1d4ed8;
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: #16a34a;
+      color: white;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(22, 163, 74, 0.22);
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .note {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .message {
+      margin-top: 14px;
+      padding: 13px 14px;
+      border-radius: 16px;
+      display: none;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .message.ok {
+      display: block;
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .message.err {
+      display: block;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 12px;
+      }
+
+      .card {
+        padding: 18px;
+        border-radius: 24px;
+      }
+
+      .grid,
+      .courses {
+        grid-template-columns: 1fr;
+      }
+
+      .brand h1 {
+        font-size: 22px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <div class="brand">
+      <div class="logo">🌱</div>
+      <div>
+        <h1>AcademeForge</h1>
+        <p>Learning Beyond the Classroom</p>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2>Create Student ID</h2>
+      <p class="muted">
+        Fill your details, select courses, complete payment, and then login in the AcademeForge app.
+      </p>
+
+      <div class="grid">
+        <div class="input-group">
+          <label>Name</label>
+          <input id="studentName" type="text" placeholder="Your full name">
+        </div>
+
+        <div class="input-group">
+          <label>Mobile Number</label>
+          <input id="studentMobile" type="tel" placeholder="10 digit mobile number">
+        </div>
+
+        <div class="input-group">
+          <label>Email</label>
+          <input id="studentEmail" type="email" placeholder="your@email.com">
+        </div>
+
+        <div class="input-group">
+          <label>Create Student ID</label>
+          <input id="studentId" type="text" placeholder="Example: devraj123">
+        </div>
+
+        <div class="input-group">
+          <label>Create Password</label>
+          <input id="studentPassword" type="password" placeholder="Create password">
+        </div>
+
+        <div class="input-group">
+          <label>Confirm Password</label>
+          <input id="studentConfirmPassword" type="password" placeholder="Confirm password">
+        </div>
+      </div>
+
+      <h3>Select Courses</h3>
+
+      <div class="courses">
+        <label class="course-option">
+          <input type="checkbox" class="courseCheck"
+            value="9c23d758-c5d8-4f0c-8840-6872253e1a4"
+            data-title="Video & Media Editing"
+            data-price="1">
+          <div>
+            <strong>Video & Media Editing</strong>
+            <span>₹1</span>
+          </div>
+        </label>
+
+        <label class="course-option">
+          <input type="checkbox" class="courseCheck"
+            value="eb422049-cb65-4993-ba4d-18e01bfd0703"
+            data-title="Creative & Graphic Design"
+            data-price="1">
+          <div>
+            <strong>Creative & Graphic Design</strong>
+            <span>₹1</span>
+          </div>
+        </label>
+
+        <label class="course-option">
+          <input type="checkbox" class="courseCheck"
+            value="d294d538-35cc-4c05-8f25-7c645b154e55"
+            data-title="AI Coding & Logic Foundation"
+            data-price="1">
+          <div>
+            <strong>AI Coding & Logic Foundation</strong>
+            <span>₹1</span>
+          </div>
+        </label>
+
+        <label class="course-option">
+          <input type="checkbox" class="courseCheck"
+            value="d03e8115-0a0d-4d61-b633-d4bf946aade"
+            data-title="Free lancing & Monetization"
+            data-price="1">
+          <div>
+            <strong>Free lancing & Monetization</strong>
+            <span>₹1</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="total-box">
+        <span>Total Amount</span>
+        <strong id="totalAmountText">₹0</strong>
+      </div>
+
+      <button class="btn" id="payBtn" onclick="startPayment()">
+        Pay & Create ID
+      </button>
+
+      <p class="note">
+        After successful payment, your Student ID will be activated and selected courses will be unlocked in the app.
+      </p>
+
+      <div id="formMessage" class="message"></div>
+    </section>
+  </main>
+
+  <script>
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const RAZORPAY_KEY_ID = "YOUR_RAZORPAY_KEY_ID";
+
+    function showMessage(type, text) {
+      const box = document.getElementById("formMessage");
+      box.className = "message " + type;
+      box.textContent = text;
+    }
+
+    function getSelectedCourses() {
+      const checks = document.querySelectorAll(".courseCheck:checked");
+
+      return Array.from(checks).map(function(check) {
+        return {
+          course_id: check.value,
+          course_title: check.dataset.title,
+          price: Number(check.dataset.price || 0)
+        };
+      });
+    }
+
+    function calculateTotal() {
+      const courses = getSelectedCourses();
+      const total = courses.reduce(function(sum, course) {
+        return sum + Number(course.price || 0);
+      }, 0);
+
+      document.getElementById("totalAmountText").textContent = "₹" + total;
+      return total;
+    }
+
+    document.querySelectorAll(".courseCheck").forEach(function(check) {
+      check.addEventListener("change", calculateTotal);
+    });
+
+    function getFormData() {
+      return {
+        name: document.getElementById("studentName").value.trim(),
+        mobile: document.getElementById("studentMobile").value.trim(),
+        email: document.getElementById("studentEmail").value.trim(),
+        student_id: document.getElementById("studentId").value.trim(),
+        password: document.getElementById("studentPassword").value.trim(),
+        confirm_password: document.getElementById("studentConfirmPassword").value.trim(),
+        courses: getSelectedCourses(),
+        total: calculateTotal()
+      };
+    }
+
+    function validateForm(data) {
+      if (!data.name) return "Enter your name.";
+      if (!data.mobile || data.mobile.length < 10) return "Enter valid mobile number.";
+      if (!data.email || !data.email.includes("@")) return "Enter valid email.";
+      if (!data.student_id) return "Create a Student ID.";
+      if (!data.password || data.password.length < 4) return "Password must be at least 4 characters.";
+      if (data.password !== data.confirm_password) return "Password and confirm password do not match.";
+      if (!data.courses.length) return "Select at least one course.";
+      if (data.total <= 0) return "Total amount should be greater than ₹0.";
+      return "";
+    }
+
+    async function checkStudentIdAvailable(studentId) {
+      const { data, error } = await db
+        .from("students")
+        .select("id")
+        .eq("student_id", studentId)
+        .limit(1);
+
+      if (error) {
+        console.log("Student check error:", error);
+        throw new Error("Could not check Student ID.");
+      }
+
+      return !data || data.length === 0;
+    }
+
+    async function createStudentAfterPayment(formData, paymentResponse) {
+      const { data: studentData, error: studentError } = await db
+        .from("students")
+        .insert([{
+          student_id: formData.student_id,
+          name: formData.name,
+          password: formData.password,
+          mobile: formData.mobile,
+          email: formData.email,
+          is_active: true,
+          payment_status: "paid"
+        }])
+        .select()
+        .single();
+
+      if (studentError) {
+        console.log("Student insert error:", studentError);
+        throw new Error("Payment done, but Student ID creation failed. Contact AcademeForge support.");
+      }
+
+      const courseRows = formData.courses.map(function(course) {
+        return {
+          student_id: studentData.id,
+          course_id: course.course_id,
+          status: "active"
+        };
+      });
+
+      const { error: courseError } = await db
+        .from("student_courses")
+        .insert(courseRows);
+
+      if (courseError) {
+        console.log("Course assign error:", courseError);
+        throw new Error("Student created, but course assignment failed. Contact AcademeForge support.");
+      }
+
+      await db
+        .from("registration_payments")
+        .insert([{
+          student_uuid: studentData.id,
+          student_id: formData.student_id,
+          student_name: formData.name,
+          mobile: formData.mobile,
+          email: formData.email,
+          selected_courses: formData.courses,
+          total_amount: formData.total,
+          currency: "INR",
+          razorpay_payment_id: paymentResponse.razorpay_payment_id || "",
+          razorpay_order_id: paymentResponse.razorpay_order_id || "",
+          razorpay_signature: paymentResponse.razorpay_signature || "",
+          status: "paid"
+        }]);
+
+      return studentData;
+    }
+
+    async function startPayment() {
+      const btn = document.getElementById("payBtn");
+      const formData = getFormData();
+      const validationError = validateForm(formData);
+
+      if (validationError) {
+        showMessage("err", validationError);
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Checking...";
+
+      try {
+        const available = await checkStudentIdAvailable(formData.student_id);
+
+        if (!available) {
+          showMessage("err", "This Student ID already exists. Try another ID.");
+          btn.disabled = false;
+          btn.textContent = "Pay & Create ID";
+          return;
+        }
+
+        if (!RAZORPAY_KEY_ID || RAZORPAY_KEY_ID === "YOUR_RAZORPAY_KEY_ID") {
+          showMessage("err", "Razorpay Key ID is not added yet.");
+          btn.disabled = false;
+          btn.textContent = "Pay & Create ID";
+          return;
+        }
+
+        btn.textContent = "Opening Payment...";
+
+        const options = {
+          key: RAZORPAY_KEY_ID,
+          amount: formData.total * 100,
+          currency: "INR",
+          name: "AcademeForge",
+          description: "Student ID Registration",
+          image: "",
+          prefill: {
+            name: formData.name,
+            email: formData.email,
+            contact: formData.mobile
+          },
+          notes: {
+            student_id: formData.student_id,
+            selected_courses: formData.courses.map(c => c.course_title).join(", ")
+          },
+          theme: {
+            color: "#16a34a"
+          },
+          handler: async function(response) {
+            try {
+              btn.textContent = "Creating ID...";
+
+              await createStudentAfterPayment(formData, response);
+
+              showMessage(
+                "ok",
+                "Payment successful. Your Student ID is active. Now open AcademeForge app and login."
+              );
+
+              btn.textContent = "ID Created Successfully";
+            } catch (err) {
+              console.log(err);
+              showMessage("err", err.message || "Something went wrong after payment.");
+              btn.disabled = false;
+              btn.textContent = "Pay & Create ID";
+            }
+          },
+          modal: {
+            ondismiss: function() {
+              btn.disabled = false;
+              btn.textContent = "Pay & Create ID";
+              showMessage("err", "Payment cancelled.");
+            }
+          }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+
+      } catch (err) {
+        console.log(err);
+        showMessage("err", err.message || "Something went wrong.");
+        btn.disabled = false;
+        btn.textContent = "Pay & Create ID";
+      }
+    }
+
+    calculateTotal();
+  </script>
+</body>
+</html>
