@@ -365,226 +365,290 @@
 
     const RAZORPAY_KEY_ID = "rzp_test_SpO0DdKfoz5wRu";
 
-    function showMessage(type, text) {
-      const box = document.getElementById("formMessage");
-      box.className = "message " + type;
-      box.textContent = text;
+  function showMessage(type, text) {
+    const box = document.getElementById("formMessage");
+    box.className = "message " + type;
+    box.textContent = text;
+  }
+
+  function getSelectedCourses() {
+    const checks = document.querySelectorAll(".courseCheck:checked");
+
+    return Array.from(checks).map(function(check) {
+      return {
+        course_id: check.value,
+        course_title: check.dataset.title,
+        price: Number(check.dataset.price || 0)
+      };
+    });
+  }
+
+  function calculateTotal() {
+    const courses = getSelectedCourses();
+    const total = courses.reduce(function(sum, course) {
+      return sum + Number(course.price || 0);
+    }, 0);
+
+    document.getElementById("totalAmountText").textContent = "₹" + total;
+    return total;
+  }
+
+  document.querySelectorAll(".courseCheck").forEach(function(check) {
+    check.addEventListener("change", calculateTotal);
+  });
+
+  function getFormData() {
+    return {
+      name: document.getElementById("studentName").value.trim(),
+      mobile: document.getElementById("studentMobile").value.trim(),
+      email: document.getElementById("studentEmail").value.trim(),
+      student_id: document.getElementById("studentId").value.trim(),
+      password: document.getElementById("studentPassword").value.trim(),
+      confirm_password: document.getElementById("studentConfirmPassword").value.trim(),
+      courses: getSelectedCourses(),
+      total: calculateTotal()
+    };
+  }
+
+  function validateForm(data) {
+    if (!data.name) return "Enter your name.";
+    if (!data.mobile || data.mobile.length < 10) return "Enter valid mobile number.";
+    if (!data.email || !data.email.includes("@")) return "Enter valid email.";
+    if (!data.student_id) return "Create a Student ID.";
+    if (!data.password || data.password.length < 4) return "Password must be at least 4 characters.";
+    if (data.password !== data.confirm_password) return "Password and confirm password do not match.";
+    if (!data.courses.length) return "Select at least one course.";
+    if (data.total <= 0) return "Total amount should be greater than ₹0.";
+    return "";
+  }
+
+  async function checkStudentIdAvailable(studentId) {
+    const { data, error } = await db
+      .from("students")
+      .select("id")
+      .eq("student_id", studentId)
+      .limit(1);
+
+    if (error) {
+      console.log("Student check error:", error);
+      throw new Error("Could not check Student ID. " + error.message);
     }
 
-    function getSelectedCourses() {
-      const checks = document.querySelectorAll(".courseCheck:checked");
+    return !data || data.length === 0;
+  }
 
-      return Array.from(checks).map(function(check) {
-        return {
-          course_id: check.value,
-          course_title: check.dataset.title,
-          price: Number(check.dataset.price || 0)
-        };
-      });
-    }
-
-    function calculateTotal() {
-      const courses = getSelectedCourses();
-      const total = courses.reduce(function(sum, course) {
-        return sum + Number(course.price || 0);
-      }, 0);
-
-      document.getElementById("totalAmountText").textContent = "₹" + total;
-      return total;
-    }
-
-    document.querySelectorAll(".courseCheck").forEach(function(check) {
-      check.addEventListener("change", calculateTotal);
+  async function checkSelectedCoursesExist(selectedCourses) {
+    const selectedCourseIds = selectedCourses.map(function(course) {
+      return course.course_id;
     });
 
-    function getFormData() {
+    const { data, error } = await db
+      .from("courses")
+      .select("id,title")
+      .in("id", selectedCourseIds);
+
+    if (error) {
+      console.log("Course check error:", error);
+      throw new Error("Could not verify selected courses. " + error.message);
+    }
+
+    const foundIds = new Set((data || []).map(function(course) {
+      return course.id;
+    }));
+
+    const missingCourses = selectedCourses.filter(function(course) {
+      return !foundIds.has(course.course_id);
+    });
+
+    if (missingCourses.length > 0) {
+      console.log("Missing course IDs:", missingCourses);
+      throw new Error(
+        "Selected course ID not found in Supabase courses table: " +
+        missingCourses.map(function(course) {
+          return course.course_title;
+        }).join(", ")
+      );
+    }
+
+    return true;
+  }
+
+  async function createStudentAfterPayment(formData, paymentResponse) {
+    const { data: studentData, error: studentError } = await db
+      .from("students")
+      .insert([{
+        student_id: formData.student_id,
+        name: formData.name,
+        password: formData.password,
+        mobile: formData.mobile,
+        email: formData.email,
+        is_active: true,
+        payment_status: "paid"
+      }])
+      .select("id, student_id, name")
+      .single();
+
+    if (studentError) {
+      console.log("Student insert error:", studentError);
+      throw new Error("Payment done, but Student ID creation failed. " + studentError.message);
+    }
+
+    if (!studentData || !studentData.id) {
+      throw new Error("Student created but student UUID was not returned.");
+    }
+
+    const courseRows = formData.courses.map(function(course) {
       return {
-        name: document.getElementById("studentName").value.trim(),
-        mobile: document.getElementById("studentMobile").value.trim(),
-        email: document.getElementById("studentEmail").value.trim(),
-        student_id: document.getElementById("studentId").value.trim(),
-        password: document.getElementById("studentPassword").value.trim(),
-        confirm_password: document.getElementById("studentConfirmPassword").value.trim(),
-        courses: getSelectedCourses(),
-        total: calculateTotal()
+        student_id: studentData.id,
+        course_id: course.course_id,
+        status: "active"
       };
+    });
+
+    console.log("Course rows inserting:", courseRows);
+
+    const { error: courseError } = await db
+      .from("student_courses")
+      .insert(courseRows);
+
+    if (courseError) {
+      console.log("Course assign error:", courseError);
+      throw new Error("Student created, but course assignment failed. " + courseError.message);
     }
 
-    function validateForm(data) {
-      if (!data.name) return "Enter your name.";
-      if (!data.mobile || data.mobile.length < 10) return "Enter valid mobile number.";
-      if (!data.email || !data.email.includes("@")) return "Enter valid email.";
-      if (!data.student_id) return "Create a Student ID.";
-      if (!data.password || data.password.length < 4) return "Password must be at least 4 characters.";
-      if (data.password !== data.confirm_password) return "Password and confirm password do not match.";
-      if (!data.courses.length) return "Select at least one course.";
-      if (data.total <= 0) return "Total amount should be greater than ₹0.";
-      return "";
+    const { error: paymentLogError } = await db
+      .from("registration_payments")
+      .insert([{
+        student_uuid: studentData.id,
+        student_id: formData.student_id,
+        student_name: formData.name,
+        mobile: formData.mobile,
+        email: formData.email,
+        selected_courses: formData.courses,
+        total_amount: formData.total,
+        currency: "INR",
+        razorpay_payment_id: paymentResponse.razorpay_payment_id || "",
+        razorpay_order_id: paymentResponse.razorpay_order_id || "",
+        razorpay_signature: paymentResponse.razorpay_signature || "",
+        status: "paid"
+      }]);
+
+    if (paymentLogError) {
+      console.log("Payment log insert error:", paymentLogError);
     }
 
-    async function checkStudentIdAvailable(studentId) {
-      const { data, error } = await db
-        .from("students")
-        .select("id")
-        .eq("student_id", studentId)
-        .limit(1);
+    return studentData;
+  }
 
-      if (error) {
-        console.log("Student check error:", error);
-        throw new Error("Could not check Student ID.");
-      }
+  async function startPayment() {
+    const btn = document.getElementById("payBtn");
+    const formData = getFormData();
+    const validationError = validateForm(formData);
 
-      return !data || data.length === 0;
+    if (validationError) {
+      showMessage("err", validationError);
+      return;
     }
 
-    async function createStudentAfterPayment(formData, paymentResponse) {
-      const { data: studentData, error: studentError } = await db
-        .from("students")
-        .insert([{
-          student_id: formData.student_id,
-          name: formData.name,
-          password: formData.password,
-          mobile: formData.mobile,
-          email: formData.email,
-          is_active: true,
-          payment_status: "paid"
-        }])
-        .select()
-        .single();
+    btn.disabled = true;
+    btn.textContent = "Checking...";
 
-      if (studentError) {
-        console.log("Student insert error:", studentError);
-        throw new Error("Payment done, but Student ID creation failed. Contact AcademeForge support.");
-      }
+    try {
+      const available = await checkStudentIdAvailable(formData.student_id);
 
-      const courseRows = formData.courses.map(function(course) {
-        return {
-          student_id: studentData.id,
-          course_id: course.course_id,
-          status: "active"
-        };
-      });
-
-      const { error: courseError } = await db
-        .from("student_courses")
-        .insert(courseRows);
-
-      if (courseError) {
-        console.log("Course assign error:", courseError);
-        throw new Error("Student created, but course assignment failed. Contact AcademeForge support.");
-      }
-
-      await db
-        .from("registration_payments")
-        .insert([{
-          student_uuid: studentData.id,
-          student_id: formData.student_id,
-          student_name: formData.name,
-          mobile: formData.mobile,
-          email: formData.email,
-          selected_courses: formData.courses,
-          total_amount: formData.total,
-          currency: "INR",
-          razorpay_payment_id: paymentResponse.razorpay_payment_id || "",
-          razorpay_order_id: paymentResponse.razorpay_order_id || "",
-          razorpay_signature: paymentResponse.razorpay_signature || "",
-          status: "paid"
-        }]);
-
-      return studentData;
-    }
-
-    async function startPayment() {
-      const btn = document.getElementById("payBtn");
-      const formData = getFormData();
-      const validationError = validateForm(formData);
-
-      if (validationError) {
-        showMessage("err", validationError);
+      if (!available) {
+        showMessage("err", "This Student ID already exists. Try another ID.");
+        btn.disabled = false;
+        btn.textContent = "Pay & Create ID";
         return;
       }
 
-      btn.disabled = true;
-      btn.textContent = "Checking...";
+      btn.textContent = "Verifying Courses...";
 
-      try {
-        const available = await checkStudentIdAvailable(formData.student_id);
+      await checkSelectedCoursesExist(formData.courses);
 
-        if (!available) {
-          showMessage("err", "This Student ID already exists. Try another ID.");
-          btn.disabled = false;
-          btn.textContent = "Pay & Create ID";
-          return;
-        }
-
-        if (!RAZORPAY_KEY_ID || RAZORPAY_KEY_ID === "YOUR_RAZORPAY_KEY_ID") {
-          showMessage("err", "Razorpay Key ID is not added yet.");
-          btn.disabled = false;
-          btn.textContent = "Pay & Create ID";
-          return;
-        }
-
-        btn.textContent = "Opening Payment...";
-
-        const options = {
-          key: RAZORPAY_KEY_ID,
-          amount: formData.total * 100,
-          currency: "INR",
-          name: "AcademeForge",
-          description: "Student ID Registration",
-          image: "",
-          prefill: {
-            name: formData.name,
-            email: formData.email,
-            contact: formData.mobile
-          },
-          notes: {
-            student_id: formData.student_id,
-            selected_courses: formData.courses.map(c => c.course_title).join(", ")
-          },
-          theme: {
-            color: "#16a34a"
-          },
-          handler: async function(response) {
-            try {
-              btn.textContent = "Creating ID...";
-
-              await createStudentAfterPayment(formData, response);
-
-              showMessage(
-                "ok",
-                "Payment successful. Your Student ID is active. Now open AcademeForge app and login."
-              );
-
-              btn.textContent = "ID Created Successfully";
-            } catch (err) {
-              console.log(err);
-              showMessage("err", err.message || "Something went wrong after payment.");
-              btn.disabled = false;
-              btn.textContent = "Pay & Create ID";
-            }
-          },
-          modal: {
-            ondismiss: function() {
-              btn.disabled = false;
-              btn.textContent = "Pay & Create ID";
-              showMessage("err", "Payment cancelled.");
-            }
-          }
-        };
-
-        const rzp = new Razorpay(options);
-        rzp.open();
-
-      } catch (err) {
-        console.log(err);
-        showMessage("err", err.message || "Something went wrong.");
+      if (!RAZORPAY_KEY_ID || RAZORPAY_KEY_ID === "YOUR_RAZORPAY_KEY_ID") {
+        showMessage("err", "Razorpay Key ID is not added yet.");
         btn.disabled = false;
         btn.textContent = "Pay & Create ID";
+        return;
       }
-    }
 
-    calculateTotal();
-  </script>
+      btn.textContent = "Opening Payment...";
+
+      const options = {
+        key: RAZORPAY_KEY_ID,
+        amount: formData.total * 100,
+        currency: "INR",
+        name: "AcademeForge",
+        description: "Student ID Registration",
+        image: "",
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.mobile
+        },
+        notes: {
+          student_id: formData.student_id,
+          selected_courses: formData.courses.map(function(c) {
+            return c.course_title;
+          }).join(", ")
+        },
+        method: {
+          upi: true,
+          card: true,
+          netbanking: true,
+          wallet: true,
+          paylater: false,
+          emi: false
+        },
+        theme: {
+          color: "#16a34a"
+        },
+        handler: async function(response) {
+          try {
+            btn.textContent = "Creating ID...";
+
+            await createStudentAfterPayment(formData, response);
+
+            showMessage(
+              "ok",
+              "Payment successful. Your Student ID is active and selected courses are unlocked. Now open AcademeForge app and login."
+            );
+
+            btn.textContent = "ID Created Successfully";
+            btn.disabled = true;
+          } catch (err) {
+            console.log("After payment error:", err);
+            showMessage("err", err.message || "Something went wrong after payment.");
+            btn.disabled = false;
+            btn.textContent = "Pay & Create ID";
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            btn.disabled = false;
+            btn.textContent = "Pay & Create ID";
+            showMessage("err", "Payment cancelled.");
+          }
+        }
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+
+    } catch (err) {
+      console.log("Start payment error:", err);
+      showMessage("err", err.message || "Something went wrong.");
+      btn.disabled = false;
+      btn.textContent = "Pay & Create ID";
+    }
+  }
+
+  calculateTotal();
+</script>
 </body>
 </html>
+
+
+
