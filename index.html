@@ -32,6 +32,7 @@
       color: #0f172a;
       padding: 14px;
       overflow-x: hidden;
+      transition: background 0.25s ease, color 0.25s ease;
     }
 
     input,
@@ -76,11 +77,16 @@
       pointer-events: none;
     }
 
+    .brand-text {
+      min-width: 0;
+    }
+
     .brand h1 {
       margin: 0;
       font-size: 26px;
       letter-spacing: -0.4px;
       color: #0f172a;
+      transition: color 0.25s ease;
     }
 
     .brand p {
@@ -88,6 +94,27 @@
       color: #64748b;
       font-size: 14px;
       font-weight: 500;
+      transition: color 0.25s ease;
+    }
+
+    .theme-toggle {
+      margin-left: auto;
+      width: 46px;
+      height: 46px;
+      border: 0;
+      border-radius: 16px;
+      background: #ffffff;
+      color: #0f172a;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.10);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      transition: transform 0.16s ease, background 0.25s ease, color 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.96);
     }
 
     .card {
@@ -98,6 +125,7 @@
       box-shadow: 0 24px 70px rgba(15, 23, 42, 0.10);
       backdrop-filter: blur(14px);
       overflow: hidden;
+      transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
     h2 {
@@ -105,6 +133,7 @@
       font-size: 28px;
       letter-spacing: -0.6px;
       color: #0f172a;
+      transition: color 0.25s ease;
     }
 
     h3 {
@@ -112,6 +141,7 @@
       font-size: 20px;
       letter-spacing: -0.3px;
       color: #0f172a;
+      transition: color 0.25s ease;
     }
 
     .muted {
@@ -119,6 +149,7 @@
       color: #64748b;
       line-height: 1.55;
       font-size: 15px;
+      transition: color 0.25s ease;
     }
 
     .grid {
@@ -138,6 +169,7 @@
       font-weight: 800;
       font-size: 14px;
       color: #334155;
+      transition: color 0.25s ease;
     }
 
     input {
@@ -150,6 +182,7 @@
       outline: none;
       color: #0f172a;
       box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.02);
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.16s ease;
     }
 
     input::placeholder {
@@ -178,7 +211,7 @@
       display: flex;
       gap: 12px;
       align-items: flex-start;
-      transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+      transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.25s ease;
       min-height: 112px;
     }
 
@@ -204,6 +237,7 @@
       font-size: 16px;
       line-height: 1.25;
       color: #1e293b;
+      transition: color 0.25s ease;
     }
 
     .course-option:has(input:checked) {
@@ -255,16 +289,19 @@
       padding: 16px;
       border-radius: 22px;
       margin: 16px 0;
+      transition: background 0.25s ease, border-color 0.25s ease;
     }
 
     .total-box span {
       color: #334155;
       font-weight: 700;
+      transition: color 0.25s ease;
     }
 
     .total-box strong {
       font-size: 25px;
       color: #1d4ed8;
+      transition: color 0.25s ease;
     }
 
     .btn {
@@ -297,6 +334,7 @@
       color: #64748b;
       margin-top: 12px;
       line-height: 1.5;
+      transition: color 0.25s ease;
     }
 
     .message {
@@ -366,6 +404,7 @@
       margin: 0 0 22px;
       font-size: 15px;
       font-weight: 600;
+      transition: color 0.25s ease;
     }
 
     .success-mini {
@@ -378,18 +417,126 @@
       color: #334155;
       font-size: 14px;
       line-height: 1.5;
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
     }
 
     .success-mini strong {
       color: #0f172a;
+      transition: color 0.25s ease;
+    }
+
+    /* Manual Dark Mode */
+    body.dark-mode {
+      background:
+        radial-gradient(circle at top left, rgba(34, 197, 94, 0.16), transparent 34%),
+        linear-gradient(135deg, #020617, #0f172a);
+      color: #f8fafc;
+    }
+
+    body.dark-mode .brand h1 {
+      color: #f8fafc;
+    }
+
+    body.dark-mode .brand p {
+      color: #cbd5e1;
+    }
+
+    body.dark-mode .theme-toggle {
+      background: #0f172a;
+      color: #f8fafc;
+      border-color: rgba(148, 163, 184, 0.28);
+    }
+
+    body.dark-mode .logo {
+      background: #f8fafc;
+    }
+
+    body.dark-mode .card {
+      background: rgba(15, 23, 42, 0.94);
+      border-color: rgba(148, 163, 184, 0.22);
+      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+    }
+
+    body.dark-mode h2,
+    body.dark-mode h3 {
+      color: #f8fafc;
+    }
+
+    body.dark-mode .muted,
+    body.dark-mode .note {
+      color: #cbd5e1;
+    }
+
+    body.dark-mode label {
+      color: #e2e8f0;
+    }
+
+    body.dark-mode input {
+      background: #020617;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+
+    body.dark-mode input::placeholder {
+      color: #64748b;
+    }
+
+    body.dark-mode .course-option {
+      background: #020617;
+      border-color: #334155;
+    }
+
+    body.dark-mode .course-option strong {
+      color: #f8fafc;
+    }
+
+    body.dark-mode .course-option:has(input:checked) {
+      background: linear-gradient(135deg, rgba(22, 163, 74, 0.16), rgba(34, 197, 94, 0.05));
+    }
+
+    body.dark-mode .old-price {
+      color: #94a3b8;
+    }
+
+    body.dark-mode .new-price {
+      color: #4ade80;
+    }
+
+    body.dark-mode .discount-tag {
+      background: rgba(22, 163, 74, 0.18);
+      color: #86efac;
+    }
+
+    body.dark-mode .total-box {
+      background: rgba(30, 64, 175, 0.18);
+      border-color: rgba(96, 165, 250, 0.30);
+    }
+
+    body.dark-mode .total-box span {
+      color: #dbeafe;
+    }
+
+    body.dark-mode .total-box strong {
+      color: #93c5fd;
+    }
+
+    body.dark-mode .success-screen p {
+      color: #cbd5e1;
+    }
+
+    body.dark-mode .success-mini {
+      background: rgba(2, 6, 23, 0.7);
+      border-color: #334155;
+      color: #cbd5e1;
+    }
+
+    body.dark-mode .success-mini strong {
+      color: #f8fafc;
     }
 
     @media (max-width: 640px) {
       body {
         padding: 12px;
-        background:
-          radial-gradient(circle at top left, rgba(22, 163, 74, 0.13), transparent 34%),
-          linear-gradient(135deg, #f8fafc, #eef6ff);
       }
 
       .brand {
@@ -409,6 +556,13 @@
 
       .brand p {
         font-size: 13px;
+      }
+
+      .theme-toggle {
+        width: 44px;
+        height: 44px;
+        border-radius: 15px;
+        font-size: 19px;
       }
 
       .card {
@@ -455,124 +609,24 @@
         padding-top: 22px;
       }
     }
-
-    @media (prefers-color-scheme: dark) {
-      body {
-        background:
-          radial-gradient(circle at top left, rgba(34, 197, 94, 0.16), transparent 34%),
-          linear-gradient(135deg, #020617, #0f172a);
-        color: #f8fafc;
-      }
-
-      .brand h1 {
-        color: #f8fafc;
-      }
-
-      .brand p {
-        color: #cbd5e1;
-      }
-
-      .logo {
-        background: #f8fafc;
-      }
-
-      .card {
-        background: rgba(15, 23, 42, 0.94);
-        border-color: rgba(148, 163, 184, 0.22);
-        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
-      }
-
-      h2,
-      h3 {
-        color: #f8fafc;
-      }
-
-      .muted,
-      .note {
-        color: #cbd5e1;
-      }
-
-      label {
-        color: #e2e8f0;
-      }
-
-      input {
-        background: #020617;
-        border-color: #334155;
-        color: #f8fafc;
-      }
-
-      input::placeholder {
-        color: #64748b;
-      }
-
-      .course-option {
-        background: #020617;
-        border-color: #334155;
-      }
-
-      .course-option strong {
-        color: #f8fafc;
-      }
-
-      .course-option:has(input:checked) {
-        background: linear-gradient(135deg, rgba(22, 163, 74, 0.16), rgba(34, 197, 94, 0.05));
-      }
-
-      .old-price {
-        color: #94a3b8;
-      }
-
-      .new-price {
-        color: #4ade80;
-      }
-
-      .discount-tag {
-        background: rgba(22, 163, 74, 0.18);
-        color: #86efac;
-      }
-
-      .total-box {
-        background: rgba(30, 64, 175, 0.18);
-        border-color: rgba(96, 165, 250, 0.30);
-      }
-
-      .total-box span {
-        color: #dbeafe;
-      }
-
-      .total-box strong {
-        color: #93c5fd;
-      }
-
-      .success-screen p {
-        color: #cbd5e1;
-      }
-
-      .success-mini {
-        background: rgba(2, 6, 23, 0.7);
-        border-color: #334155;
-        color: #cbd5e1;
-      }
-
-      .success-mini strong {
-        color: #f8fafc;
-      }
-    }
   </style>
 </head>
 
-<body oncontextmenu="return false;">
+<body class="light-mode" oncontextmenu="return false;">
   <main class="page">
     <div class="brand">
       <div class="logo">
         <img src="AF LOGO 1.jpeg" alt="AcademeForge Logo" draggable="false">
       </div>
 
-      <div>
+      <div class="brand-text">
         <h1>AcademeForge</h1>
         <p>Learning Beyond the Classroom</p>
       </div>
+
+      <button class="theme-toggle" onclick="toggleTheme()" id="themeToggleBtn" aria-label="Toggle theme">
+        🌙
+      </button>
     </div>
 
     <section class="card" id="mainCard">
@@ -752,7 +806,39 @@
       }
     });
 
-   const SUPABASE_URL = "https://nltmolhlwgsrxadknzzq.supabase.co";
+    function toggleTheme() {
+      const body = document.body;
+      const btn = document.getElementById("themeToggleBtn");
+
+      body.classList.toggle("dark-mode");
+      body.classList.toggle("light-mode");
+
+      const isDark = body.classList.contains("dark-mode");
+
+      if (btn) btn.textContent = isDark ? "☀️" : "🌙";
+
+      localStorage.setItem("afTheme", isDark ? "dark" : "light");
+    }
+
+    function loadSavedTheme() {
+      const savedTheme = localStorage.getItem("afTheme");
+      const btn = document.getElementById("themeToggleBtn");
+
+      if (savedTheme === "dark") {
+        document.body.classList.remove("light-mode");
+
+      document.body.classList.add("dark-mode");
+        if (btn) btn.textContent = "☀️";
+      } else {
+        document.body.classList.remove("dark-mode");
+        document.body.classList.add("light-mode");
+        if (btn) btn.textContent = "🌙";
+      }
+    }
+
+    loadSavedTheme();
+
+    const SUPABASE_URL = "https://nltmolhlwgsrxadknzzq.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sdG1vbGhsd2dzcnhhZGtuenpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MDMyMzksImV4cCI6MjA5NDE3OTIzOX0.HEvMlpp6XFbD9MuQhxFwsNpfvzfev3ISkJbA93SvMXc";
 
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
